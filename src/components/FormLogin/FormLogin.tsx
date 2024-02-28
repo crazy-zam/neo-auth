@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import * as Yup from 'yup';
+import { useActions } from '@/hooks/useActions';
 import eyeOpened from '@/assets/eye opened.png';
 import eyeClosed from '@/assets/eye closed.png';
 import styles from './formLogin.module.less';
-import * as Yup from 'yup';
 
 const SignupSchema = Yup.object().shape({
   login: Yup.string().required('loginNotFilled'),
@@ -30,6 +31,7 @@ const FormLogin = () => {
   const togglePasswordHandler = () => {
     setTogglePassword((prev) => !prev);
   };
+  const { userLogin } = useActions();
   const formik = useFormik({
     initialValues: {
       login: '',
@@ -48,6 +50,7 @@ const FormLogin = () => {
           'Проверьте правильность ввода пароля(только буквы английского алфавита, цифры и спецсимволы)',
         );
       console.log('login', login, 'password', password);
+      userLogin(login, password);
     },
     validationSchema: SignupSchema,
   });

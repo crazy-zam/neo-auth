@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useActions } from '@/hooks/useActions';
 import styles from './formRegistration.module.less';
 import eyeOpened from '@/assets/eye opened.png';
 import eyeClosed from '@/assets/eye closed.png';
@@ -50,6 +51,7 @@ const FormRegistration = () => {
   const [validateStatus, setValidateStatus] = useState(
     Object.assign({}, statusObject),
   );
+  const { registerUser } = useActions();
   const [buttonDisable, setButtonDisable] = useState(true);
   const [togglePassword, setTogglePassword] = useState(false);
   const [toggleConfirmPassword, setToggleConfirmPassword] = useState(false);
@@ -69,7 +71,8 @@ const FormRegistration = () => {
       confirmPassword: '',
     },
     onSubmit: ({ email, login, password }) => {
-      console.log('email', email, 'login', login, 'password', password);
+      // console.log('email', email, 'login', login, 'password', password);
+      registerUser(email, login, password);
     },
   });
 
