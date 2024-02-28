@@ -1,0 +1,41 @@
+@font-face {
+  font-family: 'M PLUS 1p';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/mplus1p/v28/e3tjeuShHdiFyPFzBRro-A.ttf) format('truetype');
+}
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 30vw;
+}
+.bold {
+  color: #212121;
+  font-family: 'M PLUS 1p', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  text-align: center;
+  padding: 25px 0;
+}
+.normal b {
+  color: #212121;
+  font-weight: 500;
+}
+.normal {
+  width: 70%;
+  color: #767676;
+  font-family: 'M PLUS 1p', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  text-align: center;
+  padding: 25px 0;
+}
+.button {
+  color: #292929;
+  font-family: 'M PLUS 1p', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  margin-top: 50px;
+}
