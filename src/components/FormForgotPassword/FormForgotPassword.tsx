@@ -1,15 +1,22 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import styles from './formForgotPassword.module.less';
+import { forgotPasswordAPI } from '@/api/api';
 
+interface Values {
+  type: 'email' | 'username';
+  string: string;
+}
 const FormForgotPassword = () => {
   const formik = useFormik({
     initialValues: {
-      type: '',
+      type: 'email',
       string: '',
     },
 
-    onSubmit: ({ type, string }) => {},
+    onSubmit: (values: Values) => {
+      forgotPasswordAPI(values.type, values.string);
+    },
   });
 
   return (
