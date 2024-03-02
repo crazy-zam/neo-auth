@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=M+PLUS+1p&display=swap');
 
+@dark-color: rgba(33, 33, 33, 1);
+@medium-color: rgba(41, 41, 41, 1);
+@light-color: rgba(118, 118, 118, 1);
+@extralight-color: rgba(248, 248, 248, 1);
+
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -8,7 +13,7 @@
 }
 
 .bold {
-  color: rgba(33, 33, 33, 1);
+  color: @dark-color;
   font-family: 'M PLUS 1p', sans-serif;
   font-weight: 500;
   font-size: 24px;
@@ -16,13 +21,13 @@
   padding: 25px 0;
 }
 .normal b {
-  color: rgba(33, 33, 33, 1);
+  color: @dark-color;
   font-weight: 500;
 }
 
 .normal {
   width: 70%;
-  color: rgba(118, 118, 118, 1);
+  color: @light-color;
   font-family: 'M PLUS 1p', sans-serif;
   font-weight: 500;
   font-size: 20px;
@@ -30,9 +35,43 @@
   padding: 25px 0;
 }
 .button {
-  color: rgba(41, 41, 41, 1);
+  color: @medium-color;
+  // margin: auto 0;
+  font-family: 'M PLUS 1p', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.modalBold {
+  font-family: 'M PLUS 1p', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  color: @dark-color;
+}
+
+.modalNormal {
   font-family: 'M PLUS 1p', sans-serif;
   font-weight: 500;
   font-size: 16px;
-  margin-top: 50px;
+  color: @light-color;
+}
+
+.modalBtn {
+  width: 311px;
+  height: 50px;
+  background-color: @dark-color;
+  color: @extralight-color;
+  border-radius: 12px;
+  padding: 13px, 16px, 13px, 16px;
+}
+
+.counter {
+  height: 150px;
+  font-family: 'M PLUS 1p', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

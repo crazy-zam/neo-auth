@@ -2,17 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useActions } from '@/hooks/useActions';
+import Loader from '@/UI/Loader/Loader';
 import styles from './formRegistration.module.less';
 import eyeOpened from '@/assets/eye opened.png';
 import eyeClosed from '@/assets/eye closed.png';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { useDebounce } from '@/hooks/useDebounce';
 
-const RegistrationSchema = Yup.object().shape({
-  email: Yup.string().email('emailNotMasked').required('emailNotFilled'),
-  login: Yup.string()
-    .min(2, 'loginNotAllowedLegth')
-    .max(20, 'loginNotAllowedLegth')
-    .matches(/^[aA-zZ]+$/, 'loginNotAllowedSymbols')
-    .required('loginNotFilled'),
+const usernameSchema = Yup.object().shape({
+  username: Yup.string()
+    .min(6, 'usernameNotAllowedLegth')
+    .max(20, 'usernameNotAllowedLegth')
+    .matches(/^[aA-zZ]+$/, 'usernameNotAllowedSymbols')
+    .required('usernameNotFilled'),
+});
+const emailSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('emailNotMasked')
+    .matches(/\./, 'emailNotMasked')
+    .required('emailNotFilled'),
+});
+const passwordSchema = Yup.object().shape({
   password: Yup.string()
     .min(8, 'passwordNotAllowedLegth')
     .max(15, 'passwordNotAllowedLegth')
@@ -26,12 +36,18 @@ const RegistrationSchema = Yup.object().shape({
     .oneOf([Yup.ref('password'), null], 'confirmPasswordNotEqual')
     .required('confirmPasswordNotFilled'),
 });
-const statusObject = {
+const emailStatusObject = {
   emailNotFilled: true,
   emailNotMasked: true,
-  loginNotFilled: true,
-  loginNotAllowedSymbols: true,
-  loginNotAllowedLegth: true,
+  errors: true,
+};
+const usernameStatusObject = {
+  usernameNotFilled: true,
+  usernameNotAllowedSymbols: true,
+  usernameNotAllowedLegth: true,
+  errors: true,
+};
+const passwordStatusObject = {
   passwordNotFilled: true,
   passwordNotAllowedSymbols: true,
   passwordNotAllowedLegth: true,
@@ -39,6 +55,7 @@ const statusObject = {
   passwordNotSpecSymbolRequire: true,
   confirmPasswordNotFilled: true,
   confirmPasswordNotEqual: true,
+  errors: true,
 };
 const setClass = (filled: boolean, err: boolean) => {
   return !filled
@@ -48,13 +65,19 @@ const setClass = (filled: boolean, err: boolean) => {
     : styles.helpError;
 };
 const FormRegistration = () => {
-  const [validateStatus, setValidateStatus] = useState(
-    Object.assign({}, statusObject),
+  const [emailValidateStatus, setEmailValidateStatus] = useState(
+    Object.assign({}, emailStatusObject),
   );
-  const { registerUser } = useActions();
+  const [usernameValidateStatus, setUsernameValidateStatus] = useState(
+    Object.assign({}, usernameStatusObject),
+  );
+  const [passwordValidateStatus, setPasswordValidateStatus] = useState(
+    Object.assign({}, passwordStatusObject),
+  );
   const [buttonDisable, setButtonDisable] = useState(true);
   const [togglePassword, setTogglePassword] = useState(false);
   const [toggleConfirmPassword, setToggleConfirmPassword] = useState(false);
+  const { registerUser, checkEmail, checkUsername } = useActions();
 
   const togglePasswordHandler = () => {
     setTogglePassword((prev) => !prev);
@@ -66,98 +89,212 @@ const FormRegistration = () => {
   const formik = useFormik({
     initialValues: {
       email: '',
-      login: '',
+      username: '',
       password: '',
       confirmPassword: '',
     },
-    onSubmit: ({ email, login, password }) => {
-      // console.log('email', email, 'login', login, 'password', password);
-      registerUser(email, login, password);
+    onSubmit: ({ email, username, password }) => {
+      registerUser(email, username, password);
     },
   });
+  const checkEmailStatus = useTypedSelector((state) => state.checkUser.email);
+  const checkUsernameStatus = useTypedSelector(
+    (state) => state.checkUser.username,
+  );
+  const debounceEmailCheck = useDebounce((val) => {
+    checkEmail(val);
+  }, 500);
+  const debounceUsernameCheck = useDebounce((val) => {
+    checkUsername(val);
+  }, 500);
 
   useEffect(() => {
-    RegistrationSchema.validate(
-      {
-        email: formik.values.email,
-        login: formik.values.login,
-        password: formik.values.password,
-        confirmPassword: formik.values.confirmPassword,
-      },
-      { abortEarly: false },
-    )
-      .then((valid) => {
-        setValidateStatus(Object.assign({}, statusObject));
-        setButtonDisable(false);
+    if (!usernameValidateStatus.errors) {
+      debounceUsernameCheck(formik.values.username);
+    }
+  }, [usernameValidateStatus]);
+
+  useEffect(() => {
+    if (!emailValidateStatus.errors) {
+      debounceEmailCheck(formik.values.email);
+    }
+  }, [emailValidateStatus]);
+
+  useEffect(() => {
+    emailSchema
+      .validate({ email: formik.values.email }, { abortEarly: false })
+      .then(() => {
+        const emailStatus = Object.assign({}, emailStatusObject);
+        emailStatus.errors = false;
+        setEmailValidateStatus(emailStatus);
       })
       .catch((e) => {
         const errors = e.errors;
-        const status = Object.assign({}, statusObject);
-        type ObjectKey = keyof typeof status;
+        const emailStatus = Object.assign({}, emailStatusObject);
+        type ObjectKey = keyof typeof emailStatus;
         errors.forEach((err: string) => {
           const key = err as ObjectKey;
-          status[key] = false;
+          emailStatus[key] = false;
         });
-        setValidateStatus(status);
-        setButtonDisable(true);
+        emailStatus.errors = true;
+        setEmailValidateStatus(emailStatus);
       });
-  }, [formik.values]);
+  }, [formik.values.email]);
+  useEffect(() => {
+    usernameSchema
+      .validate({ username: formik.values.username }, { abortEarly: false })
+      .then(() => {
+        const usernameStatus = Object.assign({}, usernameStatusObject);
+        usernameStatus.errors = false;
+        setUsernameValidateStatus(usernameStatus);
+      })
+      .catch((e) => {
+        const errors = e.errors;
+        const usernameStatus = Object.assign({}, usernameStatusObject);
+        type ObjectKey = keyof typeof usernameStatus;
+        errors.forEach((err: string) => {
+          const key = err as ObjectKey;
+          usernameStatus[key] = false;
+        });
+        usernameStatus.errors = true;
+        setUsernameValidateStatus(usernameStatus);
+      });
+  }, [formik.values.username]);
+  useEffect(() => {
+    passwordSchema
+      .validate(
+        {
+          password: formik.values.password,
+          confirmPassword: formik.values.confirmPassword,
+        },
+        { abortEarly: false },
+      )
+      .then(() => {
+        const passwordStatus = Object.assign({}, passwordStatusObject);
+        passwordStatus.errors = false;
+        setPasswordValidateStatus(passwordStatus);
+      })
+      .catch((e) => {
+        const errors = e.errors;
+        const passwordStatus = Object.assign({}, passwordStatusObject);
+        type ObjectKey = keyof typeof passwordStatus;
+        errors.forEach((err: string) => {
+          const key = err as ObjectKey;
+          passwordStatus[key] = false;
+        });
+        passwordStatus.errors = true;
+        setPasswordValidateStatus(passwordStatus);
+      });
+  }, [formik.values.password, formik.values.confirmPassword]);
+
+  useEffect(() => {
+    if (
+      !emailValidateStatus.errors &&
+      !usernameValidateStatus.errors &&
+      !passwordValidateStatus.errors &&
+      checkUsernameStatus.error === '' &&
+      checkEmailStatus.error === ''
+    ) {
+      setButtonDisable(false);
+    } else {
+      setButtonDisable(true);
+    }
+  }, [
+    emailValidateStatus.errors,
+    usernameValidateStatus.errors,
+    passwordValidateStatus.errors,
+    checkUsernameStatus.error,
+    checkEmailStatus.error,
+  ]);
 
   return (
     <div className={styles.wrapper}>
       <h1 className={styles.header}>Создать аккаунт Lorby</h1>
       <form onSubmit={formik.handleSubmit} className={styles.formWrapper}>
-        <input
-          id="email"
-          name="email"
-          type="text"
-          placeholder="Введи адрес почты"
-          onChange={formik.handleChange}
-          value={formik.values.email}
-          className={styles.input}
-        />
+        <div className={styles.inputWrapper}>
+          <input
+            id="email"
+            name="email"
+            type="text"
+            placeholder="Введи адрес почты"
+            onChange={(e) => {
+              formik.handleChange(e);
+            }}
+            value={formik.values.email}
+            className={styles.input}
+          />
+          <div className={styles.loader}>
+            {checkEmailStatus.loading ? (
+              <Loader />
+            ) : (
+              !checkEmailStatus.error && checkEmailStatus.checked && '✅'
+            )}
+          </div>
+          {checkEmailStatus.error && (
+            <div className={styles.checkError}>
+              {checkEmailStatus.error !== '' &&
+                'Эта почта уже зарегистрирована'}
+            </div>
+          )}
+        </div>
+
         <div
           className={setClass(
-            validateStatus.emailNotFilled,
-            validateStatus.emailNotMasked,
+            emailValidateStatus.emailNotFilled,
+            emailValidateStatus.emailNotMasked,
           )}
         >
           Введите в поле правильную электронную почту
-          {validateStatus.emailNotFilled &&
-            (validateStatus.emailNotMasked ? '✅' : '❌')}
+          {emailValidateStatus.emailNotFilled &&
+            (emailValidateStatus.emailNotMasked ? '✅' : '❌')}
+        </div>
+        <div className={styles.inputWrapper}>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="Придумай логин"
+            onChange={(e) => {
+              formik.handleChange(e);
+            }}
+            value={formik.values.username}
+            className={styles.input}
+          />
+          <div className={styles.loader}>
+            {checkUsernameStatus.loading ? (
+              <Loader />
+            ) : (
+              !checkUsernameStatus.error && checkUsernameStatus.checked && '✅'
+            )}
+          </div>
+          {checkUsernameStatus.error && (
+            <div className={styles.checkError}>
+              {!!checkUsernameStatus.error && 'Это имя пользователя уже занято'}
+            </div>
+          )}
         </div>
 
-        <input
-          id="login"
-          name="login"
-          type="text"
-          placeholder="Придумай логин"
-          onChange={formik.handleChange}
-          value={formik.values.login}
-          className={styles.input}
-        />
         <div
           className={setClass(
-            validateStatus.loginNotFilled,
-            validateStatus.loginNotAllowedLegth,
+            usernameValidateStatus.usernameNotFilled,
+            usernameValidateStatus.usernameNotAllowedLegth,
           )}
         >
-          От 2 до 20 символов
-          {validateStatus.loginNotFilled &&
-            (validateStatus.loginNotAllowedLegth ? '✅' : '❌')}
+          От 6 до 20 символов
+          {usernameValidateStatus.usernameNotFilled &&
+            (usernameValidateStatus.usernameNotAllowedLegth ? '✅' : '❌')}
         </div>
         <div
           className={setClass(
-            validateStatus.loginNotFilled,
-            validateStatus.loginNotAllowedSymbols,
+            usernameValidateStatus.usernameNotFilled,
+            usernameValidateStatus.usernameNotAllowedSymbols,
           )}
         >
           Допустимы только буквы английского алфавита{' '}
-          {validateStatus.loginNotFilled &&
-            (validateStatus.loginNotAllowedSymbols ? '✅' : '❌')}
+          {usernameValidateStatus.usernameNotFilled &&
+            (usernameValidateStatus.usernameNotAllowedSymbols ? '✅' : '❌')}
         </div>
         <div className={styles.inputWrapper}>
-          {' '}
           <input
             id="password"
             name="password"
@@ -178,43 +315,43 @@ const FormRegistration = () => {
 
         <div
           className={setClass(
-            validateStatus.passwordNotFilled,
-            validateStatus.passwordNotAllowedLegth,
+            passwordValidateStatus.passwordNotFilled,
+            passwordValidateStatus.passwordNotAllowedLegth,
           )}
         >
           От 8 до 15 символов
-          {validateStatus.passwordNotFilled &&
-            (validateStatus.passwordNotAllowedLegth ? '✅' : '❌')}
+          {passwordValidateStatus.passwordNotFilled &&
+            (passwordValidateStatus.passwordNotAllowedLegth ? '✅' : '❌')}
         </div>
         <div
           className={setClass(
-            validateStatus.passwordNotFilled,
-            validateStatus.passwordNotAllowedSymbols,
+            passwordValidateStatus.passwordNotFilled,
+            passwordValidateStatus.passwordNotAllowedSymbols,
           )}
         >
           Строчные и прописные буквы
-          {validateStatus.passwordNotFilled &&
-            (validateStatus.passwordNotAllowedSymbols ? '✅' : '❌')}
+          {passwordValidateStatus.passwordNotFilled &&
+            (passwordValidateStatus.passwordNotAllowedSymbols ? '✅' : '❌')}
         </div>
         <div
           className={setClass(
-            validateStatus.passwordNotFilled,
-            validateStatus.passwordNotDigitRequire,
+            passwordValidateStatus.passwordNotFilled,
+            passwordValidateStatus.passwordNotDigitRequire,
           )}
         >
           Минимум 1 цифра
-          {validateStatus.passwordNotFilled &&
-            (validateStatus.passwordNotDigitRequire ? '✅' : '❌')}
+          {passwordValidateStatus.passwordNotFilled &&
+            (passwordValidateStatus.passwordNotDigitRequire ? '✅' : '❌')}
         </div>
         <div
           className={setClass(
-            validateStatus.passwordNotFilled,
-            validateStatus.passwordNotSpecSymbolRequire,
+            passwordValidateStatus.passwordNotFilled,
+            passwordValidateStatus.passwordNotSpecSymbolRequire,
           )}
         >
           Минимум 1 спецсимвол (!,",#,$...)
-          {validateStatus.passwordNotFilled &&
-            (validateStatus.passwordNotSpecSymbolRequire ? '✅' : '❌')}
+          {passwordValidateStatus.passwordNotFilled &&
+            (passwordValidateStatus.passwordNotSpecSymbolRequire ? '✅' : '❌')}
         </div>
         <div className={styles.inputWrapper}>
           <input
@@ -237,13 +374,13 @@ const FormRegistration = () => {
 
         <div
           className={setClass(
-            validateStatus.confirmPasswordNotFilled,
-            validateStatus.confirmPasswordNotEqual,
+            passwordValidateStatus.confirmPasswordNotFilled,
+            passwordValidateStatus.confirmPasswordNotEqual,
           )}
         >
           Пароли не совпадают
-          {validateStatus.confirmPasswordNotFilled &&
-            (validateStatus.confirmPasswordNotEqual ? '✅' : '❌')}
+          {passwordValidateStatus.confirmPasswordNotFilled &&
+            (passwordValidateStatus.confirmPasswordNotEqual ? '✅' : '❌')}
         </div>
 
         <button

@@ -1,10 +1,11 @@
 import { UserState, FetchUserTypes, UserAction } from '@/types/user';
 
 const defaultState: UserState = {
-  login: '',
+  username: '',
   email: '',
   accessToken: '',
   refreshToken: '',
+  isAuth: false,
 };
 
 const userReducer = (state = defaultState, action: UserAction): UserState => {
@@ -14,6 +15,7 @@ const userReducer = (state = defaultState, action: UserAction): UserState => {
         ...state,
         accessToken: action.payload.accessToken,
         refreshToken: action.payload.refreshToken,
+        isAuth: true,
       };
     case FetchUserTypes.FETCH_LOGOUT:
       return defaultState;
@@ -21,7 +23,7 @@ const userReducer = (state = defaultState, action: UserAction): UserState => {
     case FetchUserTypes.FETCH_GET_USER:
       return {
         ...state,
-        login: action.payload.login,
+        username: action.payload.username,
         email: action.payload.email,
       };
     case FetchUserTypes.FETCH_REFRESH_TOKEN:

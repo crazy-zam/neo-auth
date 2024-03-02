@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
-import { Link } from 'react-router-dom';
+
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { useActions } from '@/hooks/useActions';
@@ -31,7 +31,7 @@ const FormLogin = () => {
   const togglePasswordHandler = () => {
     setTogglePassword((prev) => !prev);
   };
-  const { userLogin } = useActions();
+  const { userLoginAction } = useActions();
   const formik = useFormik({
     initialValues: {
       login: '',
@@ -49,8 +49,7 @@ const FormLogin = () => {
         errorNotify(
           'Проверьте правильность ввода пароля(только буквы английского алфавита, цифры и спецсимволы)',
         );
-      console.log('login', login, 'password', password);
-      userLogin(login, password);
+      userLoginAction(login, password);
     },
     validationSchema: SignupSchema,
   });
@@ -90,10 +89,6 @@ const FormLogin = () => {
         <button className={styles.button} type="submit">
           Войти
         </button>
-
-        <Link to="/registration" className={styles.linkButton}>
-          Зарегистрироваться
-        </Link>
       </form>
     </div>
   );

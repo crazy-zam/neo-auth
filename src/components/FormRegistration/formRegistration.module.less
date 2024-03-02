@@ -50,7 +50,38 @@
   right: 8px;
   z-index: 9999;
 }
+.loader {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  top: 28px;
+  right: 8px;
+  z-index: 9999;
+}
 
+.checkError {
+  position: absolute;
+  background-color: rgb(255, 199, 199);
+  border-radius: 24px;
+  color: red;
+  top: 72px;
+  font-family: 'M PLUS 1p', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 6px;
+  z-index: 9999;
+  animation: show 0.5s linear;
+}
+@keyframes show {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 .button {
   background-color: @button-color;
   color: @button-text-color;
@@ -60,6 +91,11 @@
   border-radius: 12px;
   padding: 16px 13px;
   margin: 12px 0;
+}
+
+.button:disabled {
+  background-color: rgba(215, 215, 215, 1);
+  color: rgba(118, 118, 118, 1);
 }
 
 .linkButton {

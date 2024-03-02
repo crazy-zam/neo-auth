@@ -21,7 +21,7 @@ export const registerUser = (
           password: password,
         },
       });
-      await registerUserAPI(email, username, password);
+      await registerUserAPI(username, password, email);
       dispatch({
         type: FetchRegistrationTypes.FETCH_REGISTRATION_SUCCESS,
       });

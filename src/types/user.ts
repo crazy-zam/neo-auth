@@ -1,8 +1,9 @@
 export interface UserState {
-  login: string;
+  username: string;
   email: string;
   accessToken: string;
   refreshToken: string;
+  isAuth: boolean;
 }
 
 export enum FetchUserTypes {
@@ -25,7 +26,7 @@ interface FetchLogoutAction {
 interface FetchGetUserAction {
   type: FetchUserTypes.FETCH_GET_USER;
   payload: {
-    login: string;
+    username: string;
     email: string;
   };
 }

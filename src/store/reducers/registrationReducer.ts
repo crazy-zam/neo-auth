@@ -6,7 +6,7 @@ import {
 
 const defaultState: RegistrationState = {
   user: { username: '', email: '', password: '' },
-  loading: false,
+  status: '',
   error: '',
   emailValidated: false,
 };
@@ -23,17 +23,17 @@ const registrationReducer = (
           email: action.payload.email,
           password: action.payload.password,
         },
-        loading: true,
+        status: 'loading',
       };
     case FetchRegistrationTypes.FETCH_REGISTRATION_SUCCESS:
       return {
         ...state,
-        loading: false,
+        status: 'success',
       };
     case FetchRegistrationTypes.FETCH_REGISTRATION_ERROR:
       return {
         ...state,
-        loading: false,
+        status: 'error',
         error: action.payload,
       };
     case FetchRegistrationTypes.EMAIL_VALIDATED:

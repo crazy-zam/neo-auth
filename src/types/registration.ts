@@ -1,6 +1,6 @@
 export interface RegistrationState {
   user: { username: string; email: string; password: string };
-  loading: boolean;
+  status: '' | 'loading' | 'success' | 'error';
   error: string;
   emailValidated: boolean;
 }
