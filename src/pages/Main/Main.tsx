@@ -3,12 +3,12 @@ import mainLogo from '@/assets/main logo.png';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useActions } from '@/hooks/useActions';
 const Main = () => {
-  const { username, email, refreshToken } = useTypedSelector(
+  const { username, email, accessToken, refreshToken } = useTypedSelector(
     (state) => state.user,
   );
   const { logoutAction } = useActions();
   const logoutHandler = () => {
-    logoutAction(refreshToken);
+    logoutAction(accessToken, refreshToken);
   };
   return (
     <div className={styles.page}>

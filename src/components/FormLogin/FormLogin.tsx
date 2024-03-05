@@ -85,7 +85,6 @@ const FormLogin = () => {
             <img src={togglePassword ? eyeClosed : eyeOpened} alt="" />
           </button>
         </div>
-
         <button className={styles.button} type="submit">
           Войти
         </button>

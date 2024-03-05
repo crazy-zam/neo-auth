@@ -6,16 +6,19 @@ const header = {
   'Content-Type': 'application/json',
 };
 
+const instance = axios.create({
+  baseURL: 'https://lorby-production.up.railway.app/',
+  timeout: 2000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
 export const checkUserAPI = async (
   type: 'username' | 'email',
   string: string,
 ) => {
   try {
     const data = `{"${type}": "${string}"}`;
-    const response = await axios.post(`${API}/v1/auth/check-presence`, data, {
-      headers: header,
-    });
-
+    const response = await instance.post('/v1/auth/check-presence', data);
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -33,10 +36,7 @@ export const registerUserAPI = async (
       password: password,
       email: email,
     };
-
-    await axios.post(`${API}/v1/auth/registration`, JSON.stringify(obj), {
-      headers: header,
-    });
+    await instance.post('/v1/auth/registration', JSON.stringify(obj));
   } catch (error) {
     throw error.response.data;
   }
@@ -44,13 +44,7 @@ export const registerUserAPI = async (
 
 export const sendValidateEmailAPI = async (email: string) => {
   try {
-    const response = await axios.post(
-      `${API}/v1/auth/resend-confirmation`,
-      { email: email },
-      {
-        headers: header,
-      },
-    );
+    await instance.post('/v1/auth/resend-confirmation', { email: email });
   } catch (error) {
     throw error.response.data;
   }
@@ -58,8 +52,7 @@ export const sendValidateEmailAPI = async (email: string) => {
 
 export const validateEmailAPI = async (token: string) => {
   try {
-    await axios.get(`${API}/v1/auth/confirmation`, {
-      headers: header,
+    await instance.put('/v1/auth/confirmation', null, {
       params: {
         ct: token,
       },
@@ -75,14 +68,7 @@ export const userLoginAPI = async (username: string, password: string) => {
       username: username,
       password: password,
     };
-
-    const response = await axios.post(
-      `${API}/v1/auth/login`,
-      JSON.stringify(obj),
-      {
-        headers: header,
-      },
-    );
+    const response = await instance.post('/v1/auth/login', JSON.stringify(obj));
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -92,26 +78,9 @@ export const userLoginAPI = async (username: string, password: string) => {
 export const refreshTokenAPI = async (refreshToken: string) => {
   try {
     let data = `Bearer ${refreshToken}`;
-    let config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: `${API}/v1/auth/refresh-token`,
-      headers: {
-        Accept: '*/*',
-        'Content-Type': 'application/json',
-      },
-      data: data,
-    };
-    const accessToken = axios
-      .request(config)
-      .then((response) => {
-        return response.data;
-      })
-      .catch((error) => {
-        console.log(error);
-        throw error;
-      });
-    return accessToken;
+
+    const accessToken = await instance.post('/v1/auth/refresh-token', data);
+    return accessToken.data;
   } catch (error) {
     throw error.response.data;
   }
@@ -119,11 +88,8 @@ export const refreshTokenAPI = async (refreshToken: string) => {
 
 export const getUserAPI = async (accessToken: string) => {
   try {
-    const header = {
-      Authorization: 'Bearer ' + accessToken,
-    };
-    const response = await axios.get(`${API}/v1/users`, {
-      headers: header,
+    const response = await instance.get('/v1/users', {
+      headers: { Authorization: 'Bearer ' + accessToken },
     });
     return response.data;
   } catch (error) {
@@ -136,47 +102,44 @@ export const resetPasswordAPI = async (
   resetToken: string,
 ) => {
   try {
-    const obj = {
-      password: password,
-    };
+    const obj = `{
+      "password": "${password}"
+    }`;
 
-    const response = await axios.put(
-      `${API}/v1/auth/reset-password`,
-      JSON.stringify(obj),
-      {
-        params: { rpt: resetToken },
-      },
-    );
-
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
-
-export const revokeTokenAPI = async (refreshToken: string) => {
-  try {
-    const data = `Bearer ${refreshToken}`;
-    const response = await axios.post(`${API}/v1/auth/revoke-token`, data, {
-      headers: {
-        'Content-Type': 'text/plain',
-      },
+    const response = await instance.put('/v1/auth/reset-password', obj, {
+      params: { rpt: resetToken },
     });
+
     return response.data;
   } catch (error) {
     throw error.response.data;
   }
 };
 
-export const forgotPasswordAPI = async (
-  type: 'username' | 'email',
-  string: string,
+export const revokeTokenAPI = async (
+  accessToken: string,
+  refreshToken: string,
 ) => {
   try {
-    const data = `{'${type}':'string${string}'}`;
-    const response = await axios.post(`${API}/v1/auth/forgot-password`, data, {
-      headers: header,
+    const data = 'Bearer ' + refreshToken;
+
+    const response = await instance.post('/v1/auth/revoke-token', data, {
+      headers: {
+        'Content-Type': 'text/plain',
+        Authorization: 'Bearer ' + accessToken,
+      },
     });
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const forgotPasswordAPI = async (string: string) => {
+  try {
+    const data = `{"username":"${string}"}`;
+
+    const response = await instance.post('/v1/auth/forgot-password', data);
     return response.data;
   } catch (error) {
     console.log(error);

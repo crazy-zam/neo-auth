@@ -8,61 +8,26 @@ import eyeOpened from '@/assets/eye opened.png';
 import eyeClosed from '@/assets/eye closed.png';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useDebounce } from '@/hooks/useDebounce';
+import {
+  usernameSchema,
+  emailSchema,
+  passwordSchema,
+} from '@/utils/validation/schemes';
+import {
+  emailStatusObject,
+  passwordStatusObject,
+  usernameStatusObject,
+} from '@/utils/validation/defaultStatus';
 
-const usernameSchema = Yup.object().shape({
-  username: Yup.string()
-    .min(6, 'usernameNotAllowedLegth')
-    .max(20, 'usernameNotAllowedLegth')
-    .matches(/^[aA-zZ]+$/, 'usernameNotAllowedSymbols')
-    .required('usernameNotFilled'),
-});
-const emailSchema = Yup.object().shape({
-  email: Yup.string()
-    .email('emailNotMasked')
-    .matches(/\./, 'emailNotMasked')
-    .required('emailNotFilled'),
-});
-const passwordSchema = Yup.object().shape({
-  password: Yup.string()
-    .min(8, 'passwordNotAllowedLegth')
-    .max(15, 'passwordNotAllowedLegth')
-    .matches(/[a-z]/, 'passwordNotAllowedSymbols')
-    .matches(/[A-Z]/, 'passwordNotAllowedSymbols')
-    .matches(/\d/, 'passwordNotDigitRequire')
-    .matches(/[!@#$%^&*()_=+-]/, 'passwordNotSpecSymbolRequire')
-    .matches(/^[aA-zZ\d!@#$%^&*()_=+-]+$/, 'passwordNotAllowedSymbols')
-    .required('passwordNotFilled'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], 'confirmPasswordNotEqual')
-    .required('confirmPasswordNotFilled'),
-});
-const emailStatusObject = {
-  emailNotFilled: true,
-  emailNotMasked: true,
-  errors: true,
-};
-const usernameStatusObject = {
-  usernameNotFilled: true,
-  usernameNotAllowedSymbols: true,
-  usernameNotAllowedLegth: true,
-  errors: true,
-};
-const passwordStatusObject = {
-  passwordNotFilled: true,
-  passwordNotAllowedSymbols: true,
-  passwordNotAllowedLegth: true,
-  passwordNotDigitRequire: true,
-  passwordNotSpecSymbolRequire: true,
-  confirmPasswordNotFilled: true,
-  confirmPasswordNotEqual: true,
-  errors: true,
-};
 const setClass = (filled: boolean, err: boolean) => {
   return !filled
     ? styles.helpDisabled
     : err
     ? styles.helpSucces
     : styles.helpError;
+};
+const toggleIcon = (empty: boolean, error: boolean) => {
+  return empty && (error ? '✅' : '❌');
 };
 const FormRegistration = () => {
   const [emailValidateStatus, setEmailValidateStatus] = useState(
@@ -97,11 +62,38 @@ const FormRegistration = () => {
       registerUser(email, username, password);
     },
   });
+  const createSchema = (
+    schema: Yup.ObjectSchema<{}, Yup.AnyObject, {}, ''>,
+    statusObj: any,
+    setState: any,
+    value: any,
+  ) => {
+    return () => {
+      schema
+        .validate(value, { abortEarly: false })
+        .then(() => {
+          const status = Object.assign({}, statusObj);
+          status.errors = false;
+          setState(status);
+        })
+        .catch((e) => {
+          const errors = e.errors;
+          const status = Object.assign({}, statusObj);
+          type ObjectKey = keyof typeof status;
+          errors.forEach((err: string) => {
+            const key = err as ObjectKey;
+            status[key] = false;
+          });
+          status.errors = true;
+          setState(status);
+        });
+    };
+  };
   const checkEmailStatus = useTypedSelector((state) => state.checkUser.email);
   const checkUsernameStatus = useTypedSelector(
     (state) => state.checkUser.username,
   );
-  const debounceEmailCheck = useDebounce((val) => {
+  const debounceEmailCheck = useDebounce(async (val) => {
     checkEmail(val);
   }, 500);
   const debounceUsernameCheck = useDebounce((val) => {
@@ -120,91 +112,51 @@ const FormRegistration = () => {
     }
   }, [emailValidateStatus]);
 
-  useEffect(() => {
-    emailSchema
-      .validate({ email: formik.values.email }, { abortEarly: false })
-      .then(() => {
-        const emailStatus = Object.assign({}, emailStatusObject);
-        emailStatus.errors = false;
-        setEmailValidateStatus(emailStatus);
-      })
-      .catch((e) => {
-        const errors = e.errors;
-        const emailStatus = Object.assign({}, emailStatusObject);
-        type ObjectKey = keyof typeof emailStatus;
-        errors.forEach((err: string) => {
-          const key = err as ObjectKey;
-          emailStatus[key] = false;
-        });
-        emailStatus.errors = true;
-        setEmailValidateStatus(emailStatus);
-      });
-  }, [formik.values.email]);
-  useEffect(() => {
-    usernameSchema
-      .validate({ username: formik.values.username }, { abortEarly: false })
-      .then(() => {
-        const usernameStatus = Object.assign({}, usernameStatusObject);
-        usernameStatus.errors = false;
-        setUsernameValidateStatus(usernameStatus);
-      })
-      .catch((e) => {
-        const errors = e.errors;
-        const usernameStatus = Object.assign({}, usernameStatusObject);
-        type ObjectKey = keyof typeof usernameStatus;
-        errors.forEach((err: string) => {
-          const key = err as ObjectKey;
-          usernameStatus[key] = false;
-        });
-        usernameStatus.errors = true;
-        setUsernameValidateStatus(usernameStatus);
-      });
-  }, [formik.values.username]);
-  useEffect(() => {
-    passwordSchema
-      .validate(
-        {
-          password: formik.values.password,
-          confirmPassword: formik.values.confirmPassword,
-        },
-        { abortEarly: false },
-      )
-      .then(() => {
-        const passwordStatus = Object.assign({}, passwordStatusObject);
-        passwordStatus.errors = false;
-        setPasswordValidateStatus(passwordStatus);
-      })
-      .catch((e) => {
-        const errors = e.errors;
-        const passwordStatus = Object.assign({}, passwordStatusObject);
-        type ObjectKey = keyof typeof passwordStatus;
-        errors.forEach((err: string) => {
-          const key = err as ObjectKey;
-          passwordStatus[key] = false;
-        });
-        passwordStatus.errors = true;
-        setPasswordValidateStatus(passwordStatus);
-      });
-  }, [formik.values.password, formik.values.confirmPassword]);
+  useEffect(
+    createSchema(emailSchema, emailStatusObject, setEmailValidateStatus, {
+      email: formik.values.email,
+    }),
+    [formik.values.email],
+  );
+  useEffect(
+    createSchema(
+      usernameSchema,
+      usernameStatusObject,
+      setUsernameValidateStatus,
+      { username: formik.values.username },
+    ),
+    [formik.values.username],
+  );
+
+  useEffect(
+    createSchema(
+      passwordSchema,
+      passwordStatusObject,
+      setPasswordValidateStatus,
+      {
+        password: formik.values.password,
+        confirmPassword: formik.values.confirmPassword,
+      },
+    ),
+    [formik.values.password, formik.values.confirmPassword],
+  );
 
   useEffect(() => {
-    if (
-      !emailValidateStatus.errors &&
-      !usernameValidateStatus.errors &&
-      !passwordValidateStatus.errors &&
-      checkUsernameStatus.error === '' &&
-      checkEmailStatus.error === ''
-    ) {
-      setButtonDisable(false);
-    } else {
-      setButtonDisable(true);
-    }
+    setButtonDisable(
+      emailValidateStatus.errors ||
+        usernameValidateStatus.errors ||
+        passwordValidateStatus.errors ||
+        checkUsernameStatus.error !== '' ||
+        checkEmailStatus.error !== '' ||
+        checkEmailStatus.loading ||
+        checkUsernameStatus.loading,
+    );
   }, [
     emailValidateStatus.errors,
     usernameValidateStatus.errors,
     passwordValidateStatus.errors,
-    checkUsernameStatus.error,
-    checkEmailStatus.error,
+    checkUsernameStatus,
+    checkEmailStatus,
   ]);
 
   return (
@@ -244,9 +196,11 @@ const FormRegistration = () => {
             emailValidateStatus.emailNotMasked,
           )}
         >
-          Введите в поле правильную электронную почту
-          {emailValidateStatus.emailNotFilled &&
-            (emailValidateStatus.emailNotMasked ? '✅' : '❌')}
+          Введите в поле правильную электронную почту{' '}
+          {toggleIcon(
+            emailValidateStatus.emailNotFilled,
+            emailValidateStatus.emailNotMasked,
+          )}
         </div>
         <div className={styles.inputWrapper}>
           <input
@@ -280,9 +234,11 @@ const FormRegistration = () => {
             usernameValidateStatus.usernameNotAllowedLegth,
           )}
         >
-          От 6 до 20 символов
-          {usernameValidateStatus.usernameNotFilled &&
-            (usernameValidateStatus.usernameNotAllowedLegth ? '✅' : '❌')}
+          От 6 до 20 символов{' '}
+          {toggleIcon(
+            usernameValidateStatus.usernameNotFilled,
+            usernameValidateStatus.usernameNotAllowedLegth,
+          )}
         </div>
         <div
           className={setClass(
@@ -290,9 +246,11 @@ const FormRegistration = () => {
             usernameValidateStatus.usernameNotAllowedSymbols,
           )}
         >
-          Допустимы только буквы английского алфавита{' '}
-          {usernameValidateStatus.usernameNotFilled &&
-            (usernameValidateStatus.usernameNotAllowedSymbols ? '✅' : '❌')}
+          Допустимы только буквы английского алфавита
+          {toggleIcon(
+            usernameValidateStatus.usernameNotFilled,
+            usernameValidateStatus.usernameNotAllowedSymbols,
+          )}
         </div>
         <div className={styles.inputWrapper}>
           <input
@@ -319,9 +277,11 @@ const FormRegistration = () => {
             passwordValidateStatus.passwordNotAllowedLegth,
           )}
         >
-          От 8 до 15 символов
-          {passwordValidateStatus.passwordNotFilled &&
-            (passwordValidateStatus.passwordNotAllowedLegth ? '✅' : '❌')}
+          От 8 до 15 символов{' '}
+          {toggleIcon(
+            passwordValidateStatus.passwordNotFilled,
+            passwordValidateStatus.passwordNotAllowedLegth,
+          )}
         </div>
         <div
           className={setClass(
@@ -329,9 +289,11 @@ const FormRegistration = () => {
             passwordValidateStatus.passwordNotAllowedSymbols,
           )}
         >
-          Строчные и прописные буквы
-          {passwordValidateStatus.passwordNotFilled &&
-            (passwordValidateStatus.passwordNotAllowedSymbols ? '✅' : '❌')}
+          Строчные и прописные буквы{' '}
+          {toggleIcon(
+            passwordValidateStatus.passwordNotFilled,
+            passwordValidateStatus.passwordNotAllowedSymbols,
+          )}
         </div>
         <div
           className={setClass(
@@ -339,9 +301,11 @@ const FormRegistration = () => {
             passwordValidateStatus.passwordNotDigitRequire,
           )}
         >
-          Минимум 1 цифра
-          {passwordValidateStatus.passwordNotFilled &&
-            (passwordValidateStatus.passwordNotDigitRequire ? '✅' : '❌')}
+          Минимум 1 цифра{' '}
+          {toggleIcon(
+            passwordValidateStatus.passwordNotFilled,
+            passwordValidateStatus.passwordNotDigitRequire,
+          )}
         </div>
         <div
           className={setClass(
@@ -349,9 +313,11 @@ const FormRegistration = () => {
             passwordValidateStatus.passwordNotSpecSymbolRequire,
           )}
         >
-          Минимум 1 спецсимвол (!,",#,$...)
-          {passwordValidateStatus.passwordNotFilled &&
-            (passwordValidateStatus.passwordNotSpecSymbolRequire ? '✅' : '❌')}
+          Минимум 1 спецсимвол (!,",#,$...){' '}
+          {toggleIcon(
+            passwordValidateStatus.passwordNotFilled,
+            passwordValidateStatus.passwordNotSpecSymbolRequire,
+          )}
         </div>
         <div className={styles.inputWrapper}>
           <input
@@ -378,9 +344,11 @@ const FormRegistration = () => {
             passwordValidateStatus.confirmPasswordNotEqual,
           )}
         >
-          Пароли не совпадают
-          {passwordValidateStatus.confirmPasswordNotFilled &&
-            (passwordValidateStatus.confirmPasswordNotEqual ? '✅' : '❌')}
+          Пароли не совпадают{' '}
+          {toggleIcon(
+            passwordValidateStatus.confirmPasswordNotFilled,
+            passwordValidateStatus.confirmPasswordNotEqual,
+          )}
         </div>
 
         <button

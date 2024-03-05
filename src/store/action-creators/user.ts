@@ -98,10 +98,10 @@ export const refreshTokenAction = (refreshToken: string) => {
   };
 };
 
-export const logoutAction = (refreshToken: string) => {
+export const logoutAction = (accessToken: string, refreshToken: string) => {
   return async (dispatch: Dispatch<UserAction>) => {
     try {
-      await revokeTokenAPI(refreshToken);
+      await revokeTokenAPI(accessToken, refreshToken);
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
       dispatch({

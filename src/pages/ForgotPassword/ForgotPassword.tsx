@@ -17,12 +17,15 @@ const ForgotPassword = () => {
       password: '',
     },
 
-    onSubmit: ({ password }) => {
+    onSubmit: async ({ password }) => {
       try {
-        resetPasswordAPI(password, token);
+        await resetPasswordAPI(password, token);
         setPasswordConfirmed('success');
+        setModalIsOpen(true);
       } catch (error) {
         setPasswordConfirmed(error);
+      } finally {
+        setModalIsOpen(true);
       }
     },
   });
@@ -47,7 +50,13 @@ const ForgotPassword = () => {
           value={formik.values.password}
           className={styles.input}
         />
-        <button className={styles.btn}>Установить новый пароль</button>
+        <button
+          className={styles.btn}
+          type="submit"
+          onClick={formik.submitForm}
+        >
+          Установить новый пароль
+        </button>
         <MyModal isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)}>
           {passwordConfirmed === 'success' ? (
             <>

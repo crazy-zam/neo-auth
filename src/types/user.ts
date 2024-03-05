@@ -35,6 +35,7 @@ interface FetchRefreshTokenAction {
   type: FetchUserTypes.FETCH_REFRESH_TOKEN;
   payload: {
     accessToken: string;
+    refreshToken: string;
   };
 }
 export type UserAction =

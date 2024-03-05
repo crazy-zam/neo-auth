@@ -4,35 +4,22 @@ import styles from './formForgotPassword.module.less';
 import { forgotPasswordAPI } from '@/api/api';
 
 interface Values {
-  type: 'email' | 'username';
   string: string;
 }
 const FormForgotPassword = () => {
   const formik = useFormik({
     initialValues: {
-      type: 'email',
       string: '',
     },
 
     onSubmit: (values: Values) => {
-      forgotPasswordAPI(values.type, values.string);
+      forgotPasswordAPI(values.string);
     },
   });
 
   return (
     <form onSubmit={formik.handleSubmit} className={styles.formWrapper}>
       <div className={styles.header}>Восстановление пароля!</div>
-      <select className={styles.select} name="" id="">
-        <option value="" hidden disabled selected>
-          Выберите почту или имя пользователя
-        </option>
-        <option value="email" className={styles.option}>
-          Email
-        </option>
-        <option value="username" className={styles.option}>
-          Username
-        </option>
-      </select>
       <input
         id="string"
         name="string"
