@@ -8,7 +8,6 @@ import { useActions } from '@/hooks/useActions';
 import { useEffect, useState } from 'react';
 import FormForgotPassword from '@/components/FormForgotPassword/FormForgotPassword';
 const isTokenExpired = (token: string) => {
-  console.log(token);
   const expiry = JSON.parse(atob(token.split('.')[1])).exp;
   return Math.floor(new Date().getTime() / 1000) >= expiry;
 };

@@ -15,6 +15,10 @@ export const passwordStatusObject = {
   passwordNotAllowedLegth: true,
   passwordNotDigitRequire: true,
   passwordNotSpecSymbolRequire: true,
+  errors: true,
+};
+
+export const confirmPasswordStatusObject = {
   confirmPasswordNotFilled: true,
   confirmPasswordNotEqual: true,
   errors: true,

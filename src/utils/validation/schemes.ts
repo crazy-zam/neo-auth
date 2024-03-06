@@ -24,7 +24,9 @@ export const passwordSchema = Yup.object().shape({
     .matches(/[!@#$%^&*()_=+-]/, 'passwordNotSpecSymbolRequire')
     .matches(/^[aA-zZ\d!@#$%^&*()_=+-]+$/, 'passwordNotAllowedSymbols')
     .required('passwordNotFilled'),
+});
+export const confirmPasswordSchema = Yup.object().shape({
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], 'confirmPasswordNotEqual')
-    .required('confirmPasswordNotFilled'),
+    .required('confirmPasswordNotFilled')
+    .oneOf([Yup.ref('password'), null], 'confirmPasswordNotEqual'),
 });

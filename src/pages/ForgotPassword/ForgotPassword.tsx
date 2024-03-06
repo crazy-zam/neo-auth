@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './forgotPassword.module.less';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import mainLogo from '@/assets/main logo.png';
@@ -6,12 +6,48 @@ import { useFormik } from 'formik';
 import MyModal from '@/components/MyModal/MyModal';
 import CountdownTimer from '@/components/CountdownTimer/CountdownTimer';
 import { resetPasswordAPI } from '@/api/api';
+import { passwordSchema } from '@/utils/validation/schemes';
+import * as Yup from 'yup';
+import { passwordStatusObject } from '@/utils/validation/defaultStatus';
+import ValidateError from '@/UI/ValidateError/ValidateError';
+
+const createSchema = (
+  schema: Yup.ObjectSchema<{}, Yup.AnyObject, {}, ''>,
+  statusObj: any,
+  setState: any,
+  value: any,
+) => {
+  return () => {
+    schema
+      .validate(value, { abortEarly: false })
+      .then(() => {
+        const status = Object.assign({}, statusObj);
+        status.errors = false;
+        setState(status);
+      })
+      .catch((e) => {
+        const errors = e.errors;
+        const status = Object.assign({}, statusObj);
+        type ObjectKey = keyof typeof status;
+        errors.forEach((err: string) => {
+          const key = err as ObjectKey;
+          status[key] = false;
+        });
+        status.errors = true;
+        setState(status);
+      });
+  };
+};
 
 const ForgotPassword = () => {
   const [params, setParams] = useSearchParams();
   const token = params.get('rpt');
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const [passwordConfirmed, setPasswordConfirmed] = useState('');
+  const [passwordValidateStatus, setPasswordValidateStatus] = useState(
+    Object.assign({}, passwordStatusObject),
+  );
+  const [btnDisabled, setBtnDisabled] = useState(true);
   const formik = useFormik({
     initialValues: {
       password: '',
@@ -29,9 +65,23 @@ const ForgotPassword = () => {
       }
     },
   });
+  useEffect(
+    createSchema(
+      passwordSchema,
+      passwordStatusObject,
+      setPasswordValidateStatus,
+      {
+        password: formik.values.password,
+      },
+    ),
+    [formik.values.password],
+  );
+  useEffect(() => {
+    setBtnDisabled(passwordValidateStatus.errors);
+  }, [passwordValidateStatus.errors]);
   const navigate = useNavigate();
   const navigateHandler = () => navigate('/auth/login');
-
+  console.log(passwordValidateStatus);
   return (
     <div className={styles.page}>
       <img className={styles.img} src={mainLogo} alt="company logo" />
@@ -48,12 +98,35 @@ const ForgotPassword = () => {
           placeholder="Введи пароль, только запомни его"
           onChange={formik.handleChange}
           value={formik.values.password}
-          className={styles.input}
+          className={
+            !passwordValidateStatus.errors ? styles.input : styles.wrongInput
+          }
+        />
+        <ValidateError
+          empty={passwordValidateStatus.passwordNotFilled}
+          error={passwordValidateStatus.passwordNotAllowedLegth}
+          text={'От 8 до 15 символов '}
+        />
+        <ValidateError
+          empty={passwordValidateStatus.passwordNotFilled}
+          error={passwordValidateStatus.passwordNotAllowedSymbols}
+          text={'Строчные и прописные буквы '}
+        />
+        <ValidateError
+          empty={passwordValidateStatus.passwordNotFilled}
+          error={passwordValidateStatus.passwordNotDigitRequire}
+          text={'Минимум 1 цифра '}
+        />
+        <ValidateError
+          empty={passwordValidateStatus.passwordNotFilled}
+          error={passwordValidateStatus.passwordNotSpecSymbolRequire}
+          text={'Минимум 1 спецсимвол (!,",#,$...) '}
         />
         <button
           className={styles.btn}
           type="submit"
           onClick={formik.submitForm}
+          disabled={btnDisabled}
         >
           Установить новый пароль
         </button>

@@ -4,6 +4,7 @@ export interface RegistrationState {
 }
 
 export enum FetchRegistrationTypes {
+  RESET_CHECKS = 'RESET_CHECKS',
   CHECK_USERNAME = 'CHECK_USERNAME',
   CHECK_USERNAME_SUCCESS = 'CHECK_USERNAME_SUCCESS',
   CHECK_USERNAME_ERROR = 'CHECK_USERNAME_ERROR',
@@ -12,6 +13,9 @@ export enum FetchRegistrationTypes {
   CHECK_EMAIL_ERROR = 'CHECK_EMAIL_ERROR',
 }
 
+interface ResetCheckAction {
+  type: FetchRegistrationTypes.RESET_CHECKS;
+}
 interface CheckUsernameAction {
   type: FetchRegistrationTypes.CHECK_USERNAME;
 }
@@ -38,4 +42,5 @@ export type RegistrationAction =
   | CheckUsernameErrorAction
   | CheckEmailAction
   | CheckEmailSuccessAction
-  | CheckEmailErrorAction;
+  | CheckEmailErrorAction
+  | ResetCheckAction;

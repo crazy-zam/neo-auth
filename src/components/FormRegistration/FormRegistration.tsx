@@ -6,30 +6,29 @@ import Loader from '@/UI/Loader/Loader';
 import styles from './formRegistration.module.less';
 import eyeOpened from '@/assets/eye opened.png';
 import eyeClosed from '@/assets/eye closed.png';
+import ValidateError from '@/UI/ValidateError/ValidateError';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useDebounce } from '@/hooks/useDebounce';
 import {
   usernameSchema,
   emailSchema,
   passwordSchema,
+  confirmPasswordSchema,
 } from '@/utils/validation/schemes';
 import {
   emailStatusObject,
   passwordStatusObject,
   usernameStatusObject,
+  confirmPasswordStatusObject,
 } from '@/utils/validation/defaultStatus';
 
-const setClass = (filled: boolean, err: boolean) => {
-  return !filled
-    ? styles.helpDisabled
-    : err
-    ? styles.helpSucces
-    : styles.helpError;
-};
-const toggleIcon = (empty: boolean, error: boolean) => {
-  return empty && (error ? '✅' : '❌');
-};
 const FormRegistration = () => {
+  const newPasswordSchema = passwordSchema.concat(confirmPasswordSchema);
+  const newPasswordStatusObject = Object.assign(
+    {},
+    passwordStatusObject,
+    confirmPasswordStatusObject,
+  );
   const [emailValidateStatus, setEmailValidateStatus] = useState(
     Object.assign({}, emailStatusObject),
   );
@@ -37,8 +36,9 @@ const FormRegistration = () => {
     Object.assign({}, usernameStatusObject),
   );
   const [passwordValidateStatus, setPasswordValidateStatus] = useState(
-    Object.assign({}, passwordStatusObject),
+    Object.assign({}, newPasswordStatusObject),
   );
+
   const [buttonDisable, setButtonDisable] = useState(true);
   const [togglePassword, setTogglePassword] = useState(false);
   const [toggleConfirmPassword, setToggleConfirmPassword] = useState(false);
@@ -93,7 +93,7 @@ const FormRegistration = () => {
   const checkUsernameStatus = useTypedSelector(
     (state) => state.checkUser.username,
   );
-  const debounceEmailCheck = useDebounce(async (val) => {
+  const debounceEmailCheck = useDebounce((val) => {
     checkEmail(val);
   }, 500);
   const debounceUsernameCheck = useDebounce((val) => {
@@ -130,8 +130,8 @@ const FormRegistration = () => {
 
   useEffect(
     createSchema(
-      passwordSchema,
-      passwordStatusObject,
+      newPasswordSchema,
+      newPasswordStatusObject,
       setPasswordValidateStatus,
       {
         password: formik.values.password,
@@ -189,19 +189,12 @@ const FormRegistration = () => {
             </div>
           )}
         </div>
+        <ValidateError
+          empty={emailValidateStatus.emailNotFilled}
+          error={emailValidateStatus.emailNotMasked}
+          text={'Введите в поле правильную электронную почту'}
+        />
 
-        <div
-          className={setClass(
-            emailValidateStatus.emailNotFilled,
-            emailValidateStatus.emailNotMasked,
-          )}
-        >
-          Введите в поле правильную электронную почту{' '}
-          {toggleIcon(
-            emailValidateStatus.emailNotFilled,
-            emailValidateStatus.emailNotMasked,
-          )}
-        </div>
         <div className={styles.inputWrapper}>
           <input
             id="username"
@@ -227,31 +220,17 @@ const FormRegistration = () => {
             </div>
           )}
         </div>
+        <ValidateError
+          empty={usernameValidateStatus.usernameNotFilled}
+          error={usernameValidateStatus.usernameNotAllowedLegth}
+          text={'От 6 до 20 символов '}
+        />
+        <ValidateError
+          empty={usernameValidateStatus.usernameNotFilled}
+          error={usernameValidateStatus.usernameNotAllowedSymbols}
+          text={'Допустимы только буквы английского алфавита '}
+        />
 
-        <div
-          className={setClass(
-            usernameValidateStatus.usernameNotFilled,
-            usernameValidateStatus.usernameNotAllowedLegth,
-          )}
-        >
-          От 6 до 20 символов{' '}
-          {toggleIcon(
-            usernameValidateStatus.usernameNotFilled,
-            usernameValidateStatus.usernameNotAllowedLegth,
-          )}
-        </div>
-        <div
-          className={setClass(
-            usernameValidateStatus.usernameNotFilled,
-            usernameValidateStatus.usernameNotAllowedSymbols,
-          )}
-        >
-          Допустимы только буквы английского алфавита
-          {toggleIcon(
-            usernameValidateStatus.usernameNotFilled,
-            usernameValidateStatus.usernameNotAllowedSymbols,
-          )}
-        </div>
         <div className={styles.inputWrapper}>
           <input
             id="password"
@@ -270,55 +249,27 @@ const FormRegistration = () => {
             <img src={togglePassword ? eyeClosed : eyeOpened} alt="" />
           </button>
         </div>
+        <ValidateError
+          empty={passwordValidateStatus.passwordNotFilled}
+          error={passwordValidateStatus.passwordNotAllowedLegth}
+          text={'От 8 до 15 символов '}
+        />
+        <ValidateError
+          empty={passwordValidateStatus.passwordNotFilled}
+          error={passwordValidateStatus.passwordNotAllowedSymbols}
+          text={'Строчные и прописные буквы '}
+        />
+        <ValidateError
+          empty={passwordValidateStatus.passwordNotFilled}
+          error={passwordValidateStatus.passwordNotDigitRequire}
+          text={'Минимум 1 цифра '}
+        />
+        <ValidateError
+          empty={passwordValidateStatus.passwordNotFilled}
+          error={passwordValidateStatus.passwordNotSpecSymbolRequire}
+          text={'Минимум 1 спецсимвол (!,",#,$...) '}
+        />
 
-        <div
-          className={setClass(
-            passwordValidateStatus.passwordNotFilled,
-            passwordValidateStatus.passwordNotAllowedLegth,
-          )}
-        >
-          От 8 до 15 символов{' '}
-          {toggleIcon(
-            passwordValidateStatus.passwordNotFilled,
-            passwordValidateStatus.passwordNotAllowedLegth,
-          )}
-        </div>
-        <div
-          className={setClass(
-            passwordValidateStatus.passwordNotFilled,
-            passwordValidateStatus.passwordNotAllowedSymbols,
-          )}
-        >
-          Строчные и прописные буквы{' '}
-          {toggleIcon(
-            passwordValidateStatus.passwordNotFilled,
-            passwordValidateStatus.passwordNotAllowedSymbols,
-          )}
-        </div>
-        <div
-          className={setClass(
-            passwordValidateStatus.passwordNotFilled,
-            passwordValidateStatus.passwordNotDigitRequire,
-          )}
-        >
-          Минимум 1 цифра{' '}
-          {toggleIcon(
-            passwordValidateStatus.passwordNotFilled,
-            passwordValidateStatus.passwordNotDigitRequire,
-          )}
-        </div>
-        <div
-          className={setClass(
-            passwordValidateStatus.passwordNotFilled,
-            passwordValidateStatus.passwordNotSpecSymbolRequire,
-          )}
-        >
-          Минимум 1 спецсимвол (!,",#,$...){' '}
-          {toggleIcon(
-            passwordValidateStatus.passwordNotFilled,
-            passwordValidateStatus.passwordNotSpecSymbolRequire,
-          )}
-        </div>
         <div className={styles.inputWrapper}>
           <input
             id="confirmPassword"
@@ -337,19 +288,11 @@ const FormRegistration = () => {
             <img src={toggleConfirmPassword ? eyeClosed : eyeOpened} alt="" />
           </button>
         </div>
-
-        <div
-          className={setClass(
-            passwordValidateStatus.confirmPasswordNotFilled,
-            passwordValidateStatus.confirmPasswordNotEqual,
-          )}
-        >
-          Пароли не совпадают{' '}
-          {toggleIcon(
-            passwordValidateStatus.confirmPasswordNotFilled,
-            passwordValidateStatus.confirmPasswordNotEqual,
-          )}
-        </div>
+        <ValidateError
+          empty={passwordValidateStatus.confirmPasswordNotFilled}
+          error={passwordValidateStatus.confirmPasswordNotEqual}
+          text={'Пароли не совпадают '}
+        />
 
         <button
           disabled={buttonDisable}

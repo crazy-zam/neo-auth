@@ -10,6 +10,7 @@ export enum FetchRegistrationTypes {
   FETCH_REGISTRATION_SUCCESS = 'FETCH_REGISTRATION_SUCCESS',
   FETCH_REGISTRATION_ERROR = 'FETCH_REGISTRATION_ERROR',
   EMAIL_VALIDATED = 'EMAIL_VALIDATED',
+  RESET_REGISTRAION = 'RESET_REGISTRAION',
 }
 
 interface FetchRegistrationAction {
@@ -30,8 +31,13 @@ interface FetchRegistrationErrorAction {
 interface EmailValidateAction {
   type: FetchRegistrationTypes.EMAIL_VALIDATED;
 }
+
+interface ResetRegistrationAction {
+  type: FetchRegistrationTypes.RESET_REGISTRAION;
+}
 export type RegistrationAction =
   | FetchRegistrationAction
   | FetchRegistrationSuccesAction
   | FetchRegistrationErrorAction
-  | EmailValidateAction;
+  | EmailValidateAction
+  | ResetRegistrationAction;

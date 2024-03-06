@@ -16,7 +16,9 @@ const EmailValidate = () => {
     (state) => state.registration,
   );
 
-  const { email } = useTypedSelector((state) => state.registration.user);
+  const { email, username } = useTypedSelector(
+    (state) => state.registration.user,
+  );
   const { validateEmail } = useActions();
   const navigate = useNavigate();
   const navigateHandler = () => navigate('/auth/login');
@@ -62,7 +64,7 @@ const EmailValidate = () => {
             </div>
             <button
               className={styles.counterBtn}
-              onClick={() => sendValidateEmailAPI(email)}
+              onClick={() => sendValidateEmailAPI(email, username)}
             >
               Запросить письмо повторно
             </button>

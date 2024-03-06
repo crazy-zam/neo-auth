@@ -41,6 +41,8 @@ const registrationReducer = (
         ...state,
         emailValidated: true,
       };
+    case FetchRegistrationTypes.RESET_REGISTRAION:
+      return defaultState;
     default:
       return state;
   }

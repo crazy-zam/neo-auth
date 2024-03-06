@@ -13,6 +13,8 @@ const checkUserReducer = (
   action: RegistrationAction,
 ): RegistrationState => {
   switch (action.type) {
+    case FetchRegistrationTypes.RESET_CHECKS:
+      return defaultState;
     case FetchRegistrationTypes.CHECK_USERNAME:
       return {
         ...state,

@@ -49,3 +49,9 @@ export const validateEmail = (token: string) => {
     }
   };
 };
+
+export const resetRegistration = () => {
+  return (dispatch: Dispatch<RegistrationAction>) => {
+    dispatch({ type: FetchRegistrationTypes.RESET_REGISTRAION });
+  };
+};

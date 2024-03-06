@@ -15,11 +15,11 @@ const Main = () => {
       <img className={styles.img} src={mainLogo} alt="" />
       <div className={styles.side}>
         <div className={styles.title}>
-          Добро пожаловать <b>{username}</b> !
+          Добро пожаловать <br /> <b>{username}</b>!
         </div>
         <br />
         <div>
-          Ваш email: <b>{email}</b>{' '}
+          Ваш email: <br /> <b>{email}</b>
         </div>
         <br />
         <button onClick={logoutHandler} className={styles.button}>

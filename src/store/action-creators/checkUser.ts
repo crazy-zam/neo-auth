@@ -52,3 +52,11 @@ export const checkEmail = (email: string) => {
     }
   };
 };
+
+export const resetCheck = () => {
+  return async (dispatch: Dispatch<RegistrationAction>) => {
+    dispatch({
+      type: FetchRegistrationTypes.RESET_CHECKS,
+    });
+  };
+};

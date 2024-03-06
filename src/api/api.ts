@@ -42,9 +42,12 @@ export const registerUserAPI = async (
   }
 };
 
-export const sendValidateEmailAPI = async (email: string) => {
+export const sendValidateEmailAPI = async (email: string, username: string) => {
   try {
-    await instance.post('/v1/auth/resend-confirmation', { email: email });
+    await instance.post(
+      '/v1/auth/resend-confirmation',
+      JSON.stringify({ email: email, username: username }),
+    );
   } catch (error) {
     throw error.response.data;
   }
