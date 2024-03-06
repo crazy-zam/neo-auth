@@ -10,6 +10,8 @@ import { passwordSchema } from '@/utils/validation/schemes';
 import * as Yup from 'yup';
 import { passwordStatusObject } from '@/utils/validation/defaultStatus';
 import ValidateError from '@/UI/ValidateError/ValidateError';
+import eyeOpened from '@/assets/eye opened.png';
+import eyeClosed from '@/assets/eye closed.png';
 
 const createSchema = (
   schema: Yup.ObjectSchema<{}, Yup.AnyObject, {}, ''>,
@@ -48,6 +50,10 @@ const ForgotPassword = () => {
     Object.assign({}, passwordStatusObject),
   );
   const [btnDisabled, setBtnDisabled] = useState(true);
+  const [togglePassword, setTogglePassword] = useState(false);
+  const togglePasswordHandler = () => {
+    setTogglePassword((prev) => !prev);
+  };
   const formik = useFormik({
     initialValues: {
       password: '',
@@ -81,7 +87,7 @@ const ForgotPassword = () => {
   }, [passwordValidateStatus.errors]);
   const navigate = useNavigate();
   const navigateHandler = () => navigate('/auth/login');
-  console.log(passwordValidateStatus);
+
   return (
     <div className={styles.page}>
       <img className={styles.img} src={mainLogo} alt="company logo" />
@@ -91,17 +97,27 @@ const ForgotPassword = () => {
           Чтобы установить новый пароль, введите его в поле ниже и нажмите
           отправить!
         </div>
-        <input
-          id="password"
-          name="password"
-          type="text"
-          placeholder="Введи пароль, только запомни его"
-          onChange={formik.handleChange}
-          value={formik.values.password}
-          className={
-            !passwordValidateStatus.errors ? styles.input : styles.wrongInput
-          }
-        />
+        <div className={styles.inputWrapper}>
+          <input
+            id="password"
+            name="password"
+            type={togglePassword ? 'text' : 'password'}
+            placeholder="Введи пароль, только запомни его"
+            onChange={formik.handleChange}
+            value={formik.values.password}
+            className={
+              !passwordValidateStatus.errors ? styles.input : styles.wrongInput
+            }
+          />
+          <button
+            type="button"
+            onClick={togglePasswordHandler}
+            className={styles.eyeImg}
+          >
+            <img src={togglePassword ? eyeClosed : eyeOpened} alt="" />
+          </button>
+        </div>
+
         <ValidateError
           empty={passwordValidateStatus.passwordNotFilled}
           error={passwordValidateStatus.passwordNotAllowedLegth}
