@@ -143,9 +143,9 @@ export const forgotPasswordAPI = async (string: string) => {
     const data = `{"username":"${string}"}`;
 
     const response = await instance.post('/v1/auth/forgot-password', data);
-    return response.data;
+    console.log(response);
+    return response.status;
   } catch (error) {
-    console.log(error);
-    throw error.response.data;
+    return error.response.status;
   }
 };

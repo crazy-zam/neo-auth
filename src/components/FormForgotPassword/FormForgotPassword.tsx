@@ -3,6 +3,7 @@ import styles from './formForgotPassword.module.less';
 import { forgotPasswordAPI } from '@/api/api';
 import MyModal from '@/components/MyModal/MyModal';
 import { useState } from 'react';
+
 interface Values {
   string: string;
 }
@@ -13,8 +14,10 @@ const FormForgotPassword = () => {
       string: '',
     },
 
-    onSubmit: (values: Values) => {
-      forgotPasswordAPI(values.string);
+    onSubmit: async (values: Values) => {
+      await forgotPasswordAPI(values.string);
+
+      setModalIsOpen(true);
     },
   });
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
