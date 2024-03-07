@@ -40,6 +40,10 @@ npm run start
 
 This will launch the app on http://localhost:3000.
 
+## Backend
+
+Backend created by [Yerbolat Yergaliyev](https://github.com/yerokha312)
+
 ## Contact
 
 If you have any questions, suggestions, or feedback, feel free to contact me at:
